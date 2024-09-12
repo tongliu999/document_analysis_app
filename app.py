@@ -25,3 +25,7 @@ async def create_upload_file(file_upload: UploadFile, summarizer_value: int = Fo
     text = pytesseract.image_to_string(image)
 
     return scan(text, summarizer_value)
+
+if __name__ == '__main__':
+    import uvicorn
+    uvicorn.run(app)
