@@ -20,7 +20,7 @@ function FileForm() {
         formData.append('summarizer_value', sliderValue); // Append the slider value
 
         try {
-            const endpoint = 'http://127.0.0.1:8000/';
+            const endpoint = 'http://127.0.0.1:8000/uploadfile/';
             const response = await fetch(endpoint, {
                 method: 'POST',
                 body: formData
