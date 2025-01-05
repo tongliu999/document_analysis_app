@@ -24,19 +24,85 @@
         #my-awesome-dropzone {
             border: 3px dashed #3498db;
             border-radius: 10px;
-            padding: 3rem;
+            padding: 2rem;
             width: 100%;
             margin: 2rem auto;
             text-align: center;
             background-color: white;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            min-height: 500px;
         }
 
         #my-awesome-dropzone:hover {
             border-color: #2980b9;
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .dropzone .dz-preview {
+            margin: 1rem;
+        }
+
+        .dropzone .dz-preview .dz-progress {
+            display: none !important;
+        }
+
+        .dropzone .dz-preview .dz-details {
+            padding: 1rem;
+        }
+
+        .dropzone .dz-preview .dz-image {
+            border-radius: 8px;
+            width: 250px !important;
+            height: 250px !important;
+        }
+
+        .dropzone .dz-preview .dz-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .dropzone .dz-preview.dz-image-preview {
+            background: transparent;
+        }
+
+        .dz-message {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: #666;
+            padding: 3rem;
+        }
+
+        .dz-message .note {
+            font-size: 1rem;
+            color: #999;
+            margin-top: 1rem;
+        }
+
+        button[type="submit"] {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 2rem;
+            width: 200px;
+            align-self: center;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #2980b9;
         }
 
         .slider-container {
@@ -77,23 +143,91 @@
             background: #2980b9;
         }
 
-        button[type="submit"] {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 0.8rem 2rem;
+        .summary-message {
+            background-color: white;
+            padding: 1rem;
             border-radius: 5px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
+            margin: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        button[type="submit"]:hover {
-            background-color: #2980b9;
+        .dz-preview-container {
+            min-height: 120px;
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
         }
 
-        .dropzone .dz-preview {
-            margin: 1rem;
+        .dropzone-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+
+        .button-container {
+            margin-top: auto;
+            padding-top: 1rem;
+        }
+
+        #preview-container {
+            min-height: 350px;
+            margin: 1rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .dropzone {
+            display: flex !important;
+            flex-direction: column;
+            min-height: 500px;
+        }
+
+        .button-container {
+            margin-top: auto;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding-top: 1rem;
+        }
+
+        .dz-message.hidden {
+            display: none;
+        }
+
+        .progress-container {
+            display: none;
+            width: 100%;
+            max-width: 300px;
+            margin: 1rem auto;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #3498db;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            margin-top: 0.5rem;
+            color: #2c3e50;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -101,13 +235,22 @@
 <body>
     <h1>File Summarizer</h1>
     
-    <form id="my-awesome-dropzone" class="dropzone" method="POST" action="http://localhost:8000/uploadfile/" enctype="multipart/form-data">
+    <form id="my-awesome-dropzone" class="dropzone" method="POST" action="http://98.80.232.55/uploadfile/" enctype="multipart/form-data">
         <input type="hidden" name="summarizer_value" id="summarizer_value" value="50" />
         <div class="dz-message">
             Drop your file here or click to upload<br>
             <span class="note">(Supported file types: Images)</span>
         </div>
-        <button type="submit">Upload and Summarize</button>
+        <div id="preview-container"></div>
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-bar-fill"></div>
+            </div>
+            <div class="progress-text">Processing...</div>
+        </div>
+        <div class="button-container">
+            <button type="submit">Upload and Summarize</button>
+        </div>
     </form>
 
     <div class="slider-container">
@@ -125,26 +268,90 @@
             acceptedFiles: 'image/*',
             addRemoveLinks: true,
             dictRemoveFile: "Remove",
-            url: 'http://localhost:8000/uploadfile/',
+            url: 'http://98.80.232.55/uploadfile/',
+            autoProcessQueue: false,
+            uploadMultiple: false,
+            previewsContainer: "#preview-container",
+            previewTemplate: `
+                <div class="dz-preview dz-file-preview">
+                    <div class="dz-image">
+                        <img data-dz-thumbnail />
+                    </div>
+                    <div class="dz-details">
+                        <div class="dz-filename"><span data-dz-name></span></div>
+                        <div class="dz-size" data-dz-size></div>
+                    </div>
+                    <div class="dz-error-message"><span data-dz-errormessage></span></div>
+                    <div class="dz-success-mark">
+                        <svg width="54" height="54" viewBox="0 0 54 54"><path d="M10.1 27.7l11.4 11.4 22.4-22.4"/></svg>
+                    </div>
+                    <div class="dz-error-mark">
+                        <svg width="54" height="54" viewBox="0 0 54 54"><path d="M26.3 26.3l-8.4-8.4M35 17.6l-8.7 8.7M17.6 35l8.7-8.7M35 35l-8.4-8.4"/></svg>
+                    </div>
+                </div>
+            `,
             init: function() {
+                let submitButton = document.querySelector("button[type=submit]");
+                let myDropzone = this;
+                let dropMessage = document.querySelector(".dz-message");
+                let progressInterval;
+
+                this.on("addedfile", function(file) {
+                    dropMessage.classList.add('hidden');
+                });
+
+                this.on("removedfile", function() {
+                    if (this.files.length === 0) {
+                        dropMessage.classList.remove('hidden');
+                    }
+                });
+
+                submitButton.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (myDropzone.getQueuedFiles().length > 0) {
+                        const currentValue = document.getElementById('slider').value;
+                        document.getElementById('summarizer_value').value = currentValue;
+                        progressInterval = simulateProgress();
+                        myDropzone.processQueue();
+                    } else {
+                        alert("Please add a file first!");
+                    }
+                });
+
                 this.on("sending", function(file, xhr, formData) {
-                    const sliderValue = document.getElementById('slider').value;
-                    formData.append('summarizer_value', sliderValue);
+                    const summarizerValue = document.getElementById('summarizer_value').value;
+                    formData.delete('summarizer_value');
+                    formData.append('summarizer_value', summarizerValue);
+                    console.log('Sending summarizer value:', summarizerValue);
                 });
 
                 this.on("success", function(file, response) {
-                    console.log("File successfully uploaded.");
-                    console.log(response);
-                    const messageDiv = document.createElement('div');
-                    messageDiv.textContent = 'Summary: ' + response;
-                    file.previewElement.appendChild(messageDiv);
+                    clearInterval(progressInterval);
+                    updateProgress(100);
+                    
+                    setTimeout(() => {
+                        document.querySelector('.progress-container').style.display = 'none';
+                        
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'summary-message';
+                        messageDiv.textContent = 'Summary: ' + response;
+                        document.querySelector('.slider-container').insertAdjacentElement('beforebegin', messageDiv);
+                        
+                        myDropzone.removeFile(file);
+                    }, 500);
                 });
 
                 this.on("error", function(file, errorMessage) {
+                    clearInterval(progressInterval);
+                    document.querySelector('.progress-container').style.display = 'none';
+                    
                     console.error("Error uploading file:", errorMessage);
                     const messageDiv = document.createElement('div');
+                    messageDiv.className = 'error-message';
                     messageDiv.textContent = 'Error: ' + errorMessage;
                     messageDiv.style.color = 'red';
+                    messageDiv.style.marginTop = '10px';
                     file.previewElement.appendChild(messageDiv);
                 });
             }
@@ -152,11 +359,38 @@
 
         const slider = document.getElementById('slider');
         const sliderValue = document.getElementById('slider_value');
+        const hiddenInput = document.getElementById('summarizer_value');
 
         slider.addEventListener('input', function() {
-            sliderValue.textContent = slider.value;
-            document.getElementById('summarizer_value').value = slider.value;
+            const value = this.value;
+            sliderValue.textContent = value;
+            hiddenInput.value = value;
+            console.log('Slider value updated to:', value);
         });
+
+        function updateProgress(progress) {
+            const progressBarFill = document.querySelector('.progress-bar-fill');
+            progressBarFill.style.width = `${progress}%`;
+        }
+
+        function simulateProgress() {
+            const progressContainer = document.querySelector('.progress-container');
+            const progressBarFill = document.querySelector('.progress-bar-fill');
+            
+            progressContainer.style.display = 'block';
+            progressBarFill.style.width = '0%';
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                if (progress < 90) {
+                    progress += Math.random() * 10 + 5;
+                    if (progress > 90) progress = 90;
+                    updateProgress(progress);
+                }
+            }, 500);
+
+            return interval;
+        }
     </script>
 </body>
 </html>
