@@ -261,8 +261,11 @@
     </div>
 
     <script>
-        // Get the base URL dynamically
-        const baseUrl = window.location.origin;
+        // Configure the API endpoint (your EC2 instance)
+        const API_URL = 'http://98.80.232.55';
+        
+        // Update form action dynamically
+        document.getElementById('my-awesome-dropzone').action = `${API_URL}/uploadfile/`;
         
         Dropzone.autoDiscover = false;
         let myDropzone = new Dropzone("#my-awesome-dropzone", {
@@ -271,7 +274,7 @@
             acceptedFiles: 'image/*',
             addRemoveLinks: true,
             dictRemoveFile: "Remove",
-            url: 'http://98.80.232.55/uploadfile/',  // Match the form action URL
+            url: `${API_URL}/uploadfile/`,
             autoProcessQueue: false,
             uploadMultiple: false,
             previewsContainer: "#preview-container",
