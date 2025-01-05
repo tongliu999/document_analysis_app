@@ -1,49 +1,133 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>FastAPI File Uploads</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Summarizer</title>
     <script src="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone-min.js"></script>
     <link href="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone.css" rel="stylesheet" type="text/css" />
     <style>
-        #my-awesome-dropzone {
-            border: 2px dashed #007bff;
-            border-radius: 5px;
-            padding: 20px;
-            width: 300px;
-            margin: 20px;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            color: #2c3e50;
             text-align: center;
+            margin-bottom: 2rem;
         }
+
+        #my-awesome-dropzone {
+            border: 3px dashed #3498db;
+            border-radius: 10px;
+            padding: 3rem;
+            width: 100%;
+            margin: 2rem auto;
+            text-align: center;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        #my-awesome-dropzone:hover {
+            border-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
         .slider-container {
-            margin: 20px;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin: 2rem auto;
         }
+
         .slider-label {
-            margin-bottom: 10px;
+            display: block;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #e0e0e0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #2980b9;
+        }
+
+        button[type="submit"] {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #2980b9;
+        }
+
+        .dropzone .dz-preview {
+            margin: 1rem;
         }
     </style>
 </head>
 
 <body>
-    <form id="my-awesome-dropzone" class="dropzone" method="POST" action="http://3.81.11.98/uploadfile/" enctype="multipart/form-data">
+    <h1>File Summarizer</h1>
+    
+    <form id="my-awesome-dropzone" class="dropzone" method="POST" action="http://localhost:8000/uploadfile/" enctype="multipart/form-data">
         <input type="hidden" name="summarizer_value" id="summarizer_value" value="50" />
-        <input type="file" name="file_upload" />
-        <button type="submit">Upload</button>
+        <div class="dz-message">
+            Drop your file here or click to upload<br>
+            <span class="note">(Supported file types: Images)</span>
+        </div>
+        <button type="submit">Upload and Summarize</button>
     </form>
 
     <div class="slider-container">
-        <label for="slider">Summarizer Value: <span id="slider_value">-</span></label>
+        <label class="slider-label" for="slider">
+            Summarization Level: <span id="slider_value">50</span>%
+        </label>
         <input type="range" id="slider" name="slider" min="0" max="100" step="1" value="50" />
     </div>
 
     <script>
-        // Initialize Dropzone
-        Dropzone.autoDiscover = false; // Prevent Dropzone from auto-discovering the form
+        Dropzone.autoDiscover = false;
         let myDropzone = new Dropzone("#my-awesome-dropzone", {
-            paramName: 'file_upload', // The name that will be used to transfer the file
-            maxFilesize: 2, // Maximum file size in MB
-            acceptedFiles: 'image/*', // Accept only image files
+            paramName: 'file_upload',
+            maxFilesize: 2,
+            acceptedFiles: 'image/*',
+            addRemoveLinks: true,
+            dictRemoveFile: "Remove",
+            url: 'http://localhost:8000/uploadfile/',
             init: function() {
                 this.on("sending", function(file, xhr, formData) {
-                    // Add the slider value to the form data
                     const sliderValue = document.getElementById('slider').value;
                     formData.append('summarizer_value', sliderValue);
                 });
@@ -51,16 +135,21 @@
                 this.on("success", function(file, response) {
                     console.log("File successfully uploaded.");
                     console.log(response);
+                    const messageDiv = document.createElement('div');
+                    messageDiv.textContent = 'Summary: ' + response;
+                    file.previewElement.appendChild(messageDiv);
                 });
 
-                this.on("error", function(file, response) {
-                    console.error("Error uploading file.");
-                    console.error(response);
+                this.on("error", function(file, errorMessage) {
+                    console.error("Error uploading file:", errorMessage);
+                    const messageDiv = document.createElement('div');
+                    messageDiv.textContent = 'Error: ' + errorMessage;
+                    messageDiv.style.color = 'red';
+                    file.previewElement.appendChild(messageDiv);
                 });
             }
         });
 
-        // Update slider value display
         const slider = document.getElementById('slider');
         const sliderValue = document.getElementById('slider_value');
 
