@@ -8,10 +8,20 @@ from reader import *
 import io
 
 app = FastAPI()
+
+# Define allowed origins
+origins = [
+    "http://localhost:3000",
+    "http://localhost:5000",
+    "https://document-analysis-app.vercel.app",
+    "https://document-analysis-app-git-main-tongxu95.vercel.app",
+    "https://document-analysis-app-tongxu95.vercel.app"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
-    allow_credentials=True,
+    allow_origins=origins,
+    allow_credentials=False,  # Set to False since we don't need credentials
     allow_methods=["*"],
     allow_headers=["*"],
 )
