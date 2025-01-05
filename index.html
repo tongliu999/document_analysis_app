@@ -261,6 +261,9 @@
     </div>
 
     <script>
+        // Get the base URL dynamically
+        const baseUrl = window.location.origin;
+        
         Dropzone.autoDiscover = false;
         let myDropzone = new Dropzone("#my-awesome-dropzone", {
             paramName: 'file_upload',
@@ -268,7 +271,7 @@
             acceptedFiles: 'image/*',
             addRemoveLinks: true,
             dictRemoveFile: "Remove",
-            url: 'http://98.80.232.55/uploadfile/',
+            url: 'http://98.80.232.55/uploadfile/',  // Match the form action URL
             autoProcessQueue: false,
             uploadMultiple: false,
             previewsContainer: "#preview-container",
